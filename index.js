@@ -457,7 +457,8 @@ const middleware = async (request, info)=>{
         console.log(Deno.cwd());
         console.log(err);
         return Response.json({
-            msg: "Error:LEVEL1"
+            msg: "Error:LEVEL1",
+            err: err.message
         }, {
             status: 500
         });
