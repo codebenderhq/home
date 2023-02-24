@@ -454,6 +454,7 @@ const middleware = async (request, info)=>{
         await service(Object.values(extensions), pathname, request);
         return resp;
     } catch (err) {
+        console.log(Deno.cwd());
         console.log(err);
         return Response.json({
             msg: "Error:LEVEL1"
