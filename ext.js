@@ -2,31 +2,6 @@
 // deno-lint-ignore-file
 // This code was bundled using `deno bundle` and it's not recommended to edit it manually
 
-const script_middleware = async (pathname, req)=>{
-    const isScriptRequest = pathname.includes(".js");
-    const _pathname = pathname.split(".").shift();
-    if (isScriptRequest) {
-        let onBuildResult;
-        let onServerResult;
-        let prop;
-        const res = await import(`${window.extPath}/src/_app${_pathname}.js`);
-        if (res.onBuild) {
-            onBuildResult = await res.onBuild();
-        }
-        if (res.onServer) {
-            onServerResult = await res.onServer(_pathname, req);
-        }
-        prop = {
-            onBuildResult,
-            onServerResult
-        };
-        return new Response(`(${res.default})(${JSON.stringify(prop)})`, {
-            headers: {
-                "content-type": "text/javascript"
-            }
-        });
-    }
-};
 const osType = (()=>{
     const { Deno: Deno1  } = globalThis;
     if (typeof Deno1?.build?.os === "string") {
@@ -1299,44 +1274,44 @@ function parseMediaType(v) {
         v = rest;
     }
     let str = "";
-    for (const [key1, pieceMap] of continuation){
-        const singlePartKey = `${key1}*`;
-        const v1 = pieceMap[singlePartKey];
-        if (v1) {
-            const decv = decode2331Encoding(v1);
+    for (const [key, pieceMap] of continuation){
+        const singlePartKey = `${key}*`;
+        const v = pieceMap[singlePartKey];
+        if (v) {
+            const decv = decode2331Encoding(v);
             if (decv) {
-                params[key1] = decv;
+                params[key] = decv;
             }
             continue;
         }
         str = "";
         let valid = false;
         for(let n = 0;; n++){
-            const simplePart = `${key1}*${n}`;
-            let v2 = pieceMap[simplePart];
-            if (v2) {
+            const simplePart = `${key}*${n}`;
+            let v = pieceMap[simplePart];
+            if (v) {
                 valid = true;
-                str += v2;
+                str += v;
                 continue;
             }
             const encodedPart = `${simplePart}*`;
-            v2 = pieceMap[encodedPart];
-            if (!v2) {
+            v = pieceMap[encodedPart];
+            if (!v) {
                 break;
             }
             valid = true;
             if (n === 0) {
-                const decv1 = decode2331Encoding(v2);
-                if (decv1) {
-                    str += decv1;
+                const decv = decode2331Encoding(v);
+                if (decv) {
+                    str += decv;
                 }
             } else {
-                const decv2 = decodeURI(v2);
-                str += decv2;
+                const decv = decodeURI(v);
+                str += decv;
             }
         }
         if (valid) {
-            params[key1] = str;
+            params[key] = str;
         }
     }
     return Object.keys(params).length ? [
@@ -12356,16 +12331,16 @@ class Server {
     }
     async #serveHttp(httpConn, connInfo1) {
         while(!this.#closed){
-            let requestEvent1;
+            let requestEvent;
             try {
-                requestEvent1 = await httpConn.nextRequest();
+                requestEvent = await httpConn.nextRequest();
             } catch  {
                 break;
             }
-            if (requestEvent1 === null) {
+            if (requestEvent === null) {
                 break;
             }
-            this.#respond(requestEvent1, connInfo1);
+            this.#respond(requestEvent, connInfo1);
         }
         this.#closeHttpConn(httpConn);
     }
@@ -12375,8 +12350,8 @@ class Server {
             let conn;
             try {
                 conn = await listener.accept();
-            } catch (error1) {
-                if (error1 instanceof Deno.errors.BadResource || error1 instanceof Deno.errors.InvalidData || error1 instanceof Deno.errors.UnexpectedEof || error1 instanceof Deno.errors.ConnectionReset || error1 instanceof Deno.errors.NotConnected) {
+            } catch (error) {
+                if (error instanceof Deno.errors.BadResource || error instanceof Deno.errors.InvalidData || error instanceof Deno.errors.UnexpectedEof || error instanceof Deno.errors.ConnectionReset || error instanceof Deno.errors.NotConnected) {
                     if (!acceptBackoffDelay) {
                         acceptBackoffDelay = INITIAL_ACCEPT_BACKOFF_DELAY;
                     } else {
@@ -12396,27 +12371,27 @@ class Server {
                     }
                     continue;
                 }
-                throw error1;
+                throw error;
             }
             acceptBackoffDelay = undefined;
-            let httpConn1;
+            let httpConn;
             try {
-                httpConn1 = Deno.serveHttp(conn);
+                httpConn = Deno.serveHttp(conn);
             } catch  {
                 continue;
             }
-            this.#trackHttpConnection(httpConn1);
-            const connInfo2 = {
+            this.#trackHttpConnection(httpConn);
+            const connInfo = {
                 localAddr: conn.localAddr,
                 remoteAddr: conn.remoteAddr
             };
-            this.#serveHttp(httpConn1, connInfo2);
+            this.#serveHttp(httpConn, connInfo);
         }
     }
-    #closeHttpConn(httpConn2) {
-        this.#untrackHttpConnection(httpConn2);
+    #closeHttpConn(httpConn1) {
+        this.#untrackHttpConnection(httpConn1);
         try {
-            httpConn2.close();
+            httpConn1.close();
         } catch  {}
     }
     #trackListener(listener1) {
@@ -12425,11 +12400,11 @@ class Server {
     #untrackListener(listener2) {
         this.#listeners.delete(listener2);
     }
-    #trackHttpConnection(httpConn3) {
-        this.#httpConnections.add(httpConn3);
+    #trackHttpConnection(httpConn2) {
+        this.#httpConnections.add(httpConn2);
     }
-    #untrackHttpConnection(httpConn4) {
-        this.#httpConnections.delete(httpConn4);
+    #untrackHttpConnection(httpConn3) {
+        this.#httpConnections.delete(httpConn3);
     }
 }
 function hostnameForDisplay(hostname) {
@@ -12671,10 +12646,10 @@ function parse3(args, { "--": doubleDash = false , alias ={} , boolean: __boolea
             } else {
                 aliases[key] = val;
             }
-            for (const alias1 of getForce(aliases, key)){
-                aliases[alias1] = [
+            for (const alias of getForce(aliases, key)){
+                aliases[alias] = [
                     key
-                ].concat(aliases[key].filter((y)=>alias1 !== y));
+                ].concat(aliases[key].filter((y)=>alias !== y));
             }
         }
     }
@@ -12685,11 +12660,11 @@ function parse3(args, { "--": doubleDash = false , alias ={} , boolean: __boolea
             const booleanArgs = typeof __boolean === "string" ? [
                 __boolean
             ] : __boolean;
-            for (const key1 of booleanArgs.filter(Boolean)){
-                flags.bools[key1] = true;
-                const alias2 = get(aliases, key1);
-                if (alias2) {
-                    for (const al of alias2){
+            for (const key of booleanArgs.filter(Boolean)){
+                flags.bools[key] = true;
+                const alias = get(aliases, key);
+                if (alias) {
+                    for (const al of alias){
                         flags.bools[al] = true;
                     }
                 }
@@ -12700,12 +12675,12 @@ function parse3(args, { "--": doubleDash = false , alias ={} , boolean: __boolea
         const stringArgs = typeof string === "string" ? [
             string
         ] : string;
-        for (const key2 of stringArgs.filter(Boolean)){
-            flags.strings[key2] = true;
-            const alias3 = get(aliases, key2);
-            if (alias3) {
-                for (const al1 of alias3){
-                    flags.strings[al1] = true;
+        for (const key of stringArgs.filter(Boolean)){
+            flags.strings[key] = true;
+            const alias = get(aliases, key);
+            if (alias) {
+                for (const al of alias){
+                    flags.strings[al] = true;
                 }
             }
         }
@@ -12714,12 +12689,12 @@ function parse3(args, { "--": doubleDash = false , alias ={} , boolean: __boolea
         const collectArgs = typeof collect === "string" ? [
             collect
         ] : collect;
-        for (const key3 of collectArgs.filter(Boolean)){
-            flags.collect[key3] = true;
-            const alias4 = get(aliases, key3);
-            if (alias4) {
-                for (const al2 of alias4){
-                    flags.collect[al2] = true;
+        for (const key of collectArgs.filter(Boolean)){
+            flags.collect[key] = true;
+            const alias = get(aliases, key);
+            if (alias) {
+                for (const al of alias){
+                    flags.collect[al] = true;
                 }
             }
         }
@@ -12728,12 +12703,12 @@ function parse3(args, { "--": doubleDash = false , alias ={} , boolean: __boolea
         const negatableArgs = typeof negatable === "string" ? [
             negatable
         ] : negatable;
-        for (const key4 of negatableArgs.filter(Boolean)){
-            flags.negatable[key4] = true;
-            const alias5 = get(aliases, key4);
-            if (alias5) {
-                for (const al3 of alias5){
-                    flags.negatable[al3] = true;
+        for (const key of negatableArgs.filter(Boolean)){
+            flags.negatable[key] = true;
+            const alias = get(aliases, key);
+            if (alias) {
+                for (const al of alias){
+                    flags.negatable[al] = true;
                 }
             }
         }
@@ -12796,47 +12771,47 @@ function parse3(args, { "--": doubleDash = false , alias ={} , boolean: __boolea
         if (/^--.+=/.test(arg)) {
             const m = arg.match(/^--([^=]+)=(.*)$/s);
             assert(m != null);
-            const [, key5, value] = m;
-            if (flags.bools[key5]) {
+            const [, key, value] = m;
+            if (flags.bools[key]) {
                 const booleanValue = value !== "false";
-                setArg(key5, booleanValue, arg);
+                setArg(key, booleanValue, arg);
             } else {
-                setArg(key5, value, arg);
+                setArg(key, value, arg);
             }
         } else if (/^--no-.+/.test(arg) && get(flags.negatable, arg.replace(/^--no-/, ""))) {
-            const m1 = arg.match(/^--no-(.+)/);
-            assert(m1 != null);
-            setArg(m1[1], false, arg, false);
+            const m = arg.match(/^--no-(.+)/);
+            assert(m != null);
+            setArg(m[1], false, arg, false);
         } else if (/^--.+/.test(arg)) {
-            const m2 = arg.match(/^--(.+)/);
-            assert(m2 != null);
-            const [, key6] = m2;
+            const m = arg.match(/^--(.+)/);
+            assert(m != null);
+            const [, key] = m;
             const next = args[i + 1];
-            if (next !== undefined && !/^-/.test(next) && !get(flags.bools, key6) && !flags.allBools && (get(aliases, key6) ? !aliasIsBoolean(key6) : true)) {
-                setArg(key6, next, arg);
+            if (next !== undefined && !/^-/.test(next) && !get(flags.bools, key) && !flags.allBools && (get(aliases, key) ? !aliasIsBoolean(key) : true)) {
+                setArg(key, next, arg);
                 i++;
             } else if (/^(true|false)$/.test(next)) {
-                setArg(key6, next === "true", arg);
+                setArg(key, next === "true", arg);
                 i++;
             } else {
-                setArg(key6, get(flags.strings, key6) ? "" : true, arg);
+                setArg(key, get(flags.strings, key) ? "" : true, arg);
             }
         } else if (/^-[^-]+/.test(arg)) {
             const letters = arg.slice(1, -1).split("");
             let broken = false;
             for(let j = 0; j < letters.length; j++){
-                const next1 = arg.slice(j + 2);
-                if (next1 === "-") {
-                    setArg(letters[j], next1, arg);
+                const next = arg.slice(j + 2);
+                if (next === "-") {
+                    setArg(letters[j], next, arg);
                     continue;
                 }
-                if (/[A-Za-z]/.test(letters[j]) && /=/.test(next1)) {
-                    setArg(letters[j], next1.split(/=(.+)/)[1], arg);
+                if (/[A-Za-z]/.test(letters[j]) && /=/.test(next)) {
+                    setArg(letters[j], next.split(/=(.+)/)[1], arg);
                     broken = true;
                     break;
                 }
-                if (/[A-Za-z]/.test(letters[j]) && /-?\d+(\.\d*)?(e-?\d+)?$/.test(next1)) {
-                    setArg(letters[j], next1, arg);
+                if (/[A-Za-z]/.test(letters[j]) && /-?\d+(\.\d*)?(e-?\d+)?$/.test(next)) {
+                    setArg(letters[j], next, arg);
                     broken = true;
                     break;
                 }
@@ -12848,16 +12823,16 @@ function parse3(args, { "--": doubleDash = false , alias ={} , boolean: __boolea
                     setArg(letters[j], get(flags.strings, letters[j]) ? "" : true, arg);
                 }
             }
-            const [key7] = arg.slice(-1);
-            if (!broken && key7 !== "-") {
-                if (args[i + 1] && !/^(-|--)[^-]/.test(args[i + 1]) && !get(flags.bools, key7) && (get(aliases, key7) ? !aliasIsBoolean(key7) : true)) {
-                    setArg(key7, args[i + 1], arg);
+            const [key] = arg.slice(-1);
+            if (!broken && key !== "-") {
+                if (args[i + 1] && !/^(-|--)[^-]/.test(args[i + 1]) && !get(flags.bools, key) && (get(aliases, key) ? !aliasIsBoolean(key) : true)) {
+                    setArg(key, args[i + 1], arg);
                     i++;
                 } else if (args[i + 1] && /^(true|false)$/.test(args[i + 1])) {
-                    setArg(key7, args[i + 1] === "true", arg);
+                    setArg(key, args[i + 1] === "true", arg);
                     i++;
                 } else {
-                    setArg(key7, get(flags.strings, key7) ? "" : true, arg);
+                    setArg(key, get(flags.strings, key) ? "" : true, arg);
                 }
             }
         } else {
@@ -12870,35 +12845,35 @@ function parse3(args, { "--": doubleDash = false , alias ={} , boolean: __boolea
             }
         }
     }
-    for (const [key8, value1] of Object.entries(defaults)){
-        if (!hasKey(argv, key8.split("."))) {
-            setKey(argv, key8, value1);
-            if (aliases[key8]) {
-                for (const x of aliases[key8]){
-                    setKey(argv, x, value1);
+    for (const [key, value] of Object.entries(defaults)){
+        if (!hasKey(argv, key.split("."))) {
+            setKey(argv, key, value);
+            if (aliases[key]) {
+                for (const x of aliases[key]){
+                    setKey(argv, x, value);
                 }
             }
         }
     }
-    for (const key9 of Object.keys(flags.bools)){
-        if (!hasKey(argv, key9.split("."))) {
-            const value2 = get(flags.collect, key9) ? [] : false;
-            setKey(argv, key9, value2, false);
+    for (const key of Object.keys(flags.bools)){
+        if (!hasKey(argv, key.split("."))) {
+            const value = get(flags.collect, key) ? [] : false;
+            setKey(argv, key, value, false);
         }
     }
-    for (const key10 of Object.keys(flags.strings)){
-        if (!hasKey(argv, key10.split(".")) && get(flags.collect, key10)) {
-            setKey(argv, key10, [], false);
+    for (const key of Object.keys(flags.strings)){
+        if (!hasKey(argv, key.split(".")) && get(flags.collect, key)) {
+            setKey(argv, key, [], false);
         }
     }
     if (doubleDash) {
         argv["--"] = [];
-        for (const key11 of notFlags){
-            argv["--"].push(key11);
+        for (const key of notFlags){
+            argv["--"].push(key);
         }
     } else {
-        for (const key12 of notFlags){
-            argv._.push(key12);
+        for (const key of notFlags){
+            argv._.push(key);
         }
     }
     return argv;
@@ -13093,25 +13068,25 @@ function passStringToWasm0(arg, malloc, realloc) {
         return ptr;
     }
     let len = arg.length;
-    let ptr1 = malloc(len);
+    let ptr = malloc(len);
     const mem = getUint8Memory0();
     let offset = 0;
     for(; offset < len; offset++){
         const code = arg.charCodeAt(offset);
         if (code > 0x7F) break;
-        mem[ptr1 + offset] = code;
+        mem[ptr + offset] = code;
     }
     if (offset !== len) {
         if (offset !== 0) {
             arg = arg.slice(offset);
         }
-        ptr1 = realloc(ptr1, len, len = offset + arg.length * 3);
-        const view = getUint8Memory0().subarray(ptr1 + offset, ptr1 + len);
+        ptr = realloc(ptr, len, len = offset + arg.length * 3);
+        const view = getUint8Memory0().subarray(ptr + offset, ptr + len);
         const ret = encodeString(arg, view);
         offset += ret.written;
     }
     WASM_VECTOR_LEN = offset;
-    return ptr1;
+    return ptr;
 }
 function isLikeNone(x) {
     return x === undefined || x === null;
@@ -16845,10 +16820,10 @@ async function serveDirIndex(dirPath, options) {
         }
         const filePath = mod1.join(dirPath, entry.name);
         const fileUrl = encodeURIComponent(mod1.join(dirUrl, entry.name)).replaceAll("%2F", "/");
-        const fileInfo1 = await Deno.stat(filePath);
+        const fileInfo = await Deno.stat(filePath);
         listEntry.push({
-            mode: modeToString(entry.isDirectory, fileInfo1.mode),
-            size: entry.isFile ? fileLenToString(fileInfo1.size ?? 0) : "",
+            mode: modeToString(entry.isDirectory, fileInfo.mode),
+            size: entry.isFile ? fileLenToString(fileInfo.size ?? 0) : "",
             name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
             url: `${fileUrl}${entry.isDirectory ? "/" : ""}`
         });
@@ -17040,8 +17015,8 @@ async function serveDir(req, opts = {}) {
                 fileInfo
             });
         }
-    } catch (e1) {
-        const err = e1 instanceof Error ? e1 : new Error("[non-error thrown]");
+    } catch (e) {
+        const err = e instanceof Error ? e : new Error("[non-error thrown]");
         if (!opts.quiet) console.error(red(err.message));
         response = await serveFallback(req, err);
     }
@@ -17380,4 +17355,4 @@ const html_response = (res)=>{
         }
     });
 };
-export { script_middleware as script_middleware, asset_middlware as asset_middlware, api_middleware as api_middleware, html_middleware as html_middleware };
+export { asset_middlware as asset_middlware, api_middleware as api_middleware, html_middleware as html_middleware };

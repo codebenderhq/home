@@ -1,10 +1,14 @@
 {
     "tasks": {
         "dev-unsecure" : "deno run -A ../std/index.js tw & export LOCAL=./src && deno run  -A --unsafely-ignore-certificate-errors --watch=./src/  ../std/.frame/index.js",
-        "dev" : "export ENV=dev && deno run -A ../std/index.js tw & export LOCAL=./src && deno run  -A  --watch=./src/  ../std/.frame/index.js",
-        "bundle" : "deno bundle ../std/.frame/index.js ./index.js && deno bundle ./extensions.js ext.js",
+        "dev" : "export ENV=dev && deno run -A ../std/index.js tw & export LOCAL=./src && deno run  -A  --watch=./src/ --import-map=./import_map.json  ../std/.frame/index.js",
+        "bundle" : "deno bundle --import-map=./import_map.json ../std/.frame/index.js ./index.js && deno bundle ./extensions.js ext.js",
         "release": "echo 'creating release' && git tag -a",
         "init": "chmod +x style && ./style"
+        
     },
-    "lock": false
+    "lock": false,
+    "imports": {
+        "app": "/Users/cp36613/rawkakani/commerce/home/extensions.js"
+    }
 }
