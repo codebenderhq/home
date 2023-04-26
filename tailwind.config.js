@@ -5,11 +5,10 @@ module.exports = {
     "./src/_app/**/*.{html,js,svg,css,jsx}",
     "./src/app/**/**/*.{html,js,svg,css, jsx}",
     "./src/**/*.{html,css,svg}",
-    "./src/app/*.{html,css}"
- 
-],
+    "./src/app/*.{html,css}",
+  ],
   theme: {
     extend: {},
   },
   plugins: [],
-}
+};

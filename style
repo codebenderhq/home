@@ -1,8 +1,9 @@
 #!/bin/bash
 
 echo 'downloading ' & \
-curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-macos-arm64  && \
+curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-x64   && \
 
-echo 'configuring' && mv tailwindcss-macos-arm64 tailwindcss && \
+echo 'configuring' && mv  tailwindcss-linux-x64  tailwindcss && \
 
 echo 'finalizing '  && chmod +x tailwindcss
+
