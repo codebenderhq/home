@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sauveur - A website to help developers support software organisations</title>
+<meta name="description" content="A website to help developers support software organisations" />
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta name="author" content="Rawk Akani">
+<!-- <link rel="manifest" href="app.webmanifest"> -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<meta property="og:title" content="Sauveur - A website to help developers support software organisations">
+<meta property="og:description" content="A website to help developers support software organisations">
+<meta property="og:image" content="background.png">
+<meta property="og:url" content="https://sauveur.xyz">
+
+<meta name="twitter:title" content="Sauveur - A website to help developers support software organisations">
+<meta name="twitter:description" content="A website to help developers support software organisations">
+<meta name="twitter:image" content="background.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="stylesheet" href="output.css">
+<!-- <script type="module" src="index.js"></script> -->
+<script>
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init('phc_VjREvh3D97MQ83TizwtaN4rDPE7GFjmYfia868qSs9p',{api_host:'https://app.posthog.com'})
+</script>
+</head>
+<body class="bg-white text-black dark:bg-black dark:text-white ">
+
+    <div id="landing" class="w-screen h-screen flex flex-col  font-book">
+        <div class="w-full flex justify-end p-2">
+            <!-- <a href="/app/login" class="text-sm p-2">Login</a> -->
+        </div>
+        
+        <div class="w-full h-full flex items-center jusity-center p-4 text-center">
+
+        <form id="contact" class="space-y-4 ">
+        <input type="text" placeholder="Your Name" name="name" class="p-2 w-full text-black"/>
+        <input type="tel" placeholder="Your Whatsapp number" name="number" class="p-2 w-full text-black"/>
+
+        <fieldset class="text-left space-y-2">
+        <legend>how can i help you</legend>
+
+    <div>
+      <input type="radio" id="consult" name="help" value="consultation">
+      <label for="consult">Consultation, on how I can improve my business with technology</label>
+    </div>
+
+    <div>
+      <input type="radio" id="academy" name="help" value="acadewey">
+      <label for="academy">I would like to train someone in my organisation to implement modern technology for my organisation</label>
+    </div>
+
+    <div>
+      <input type="radio" id="chat" name="help" value="chat">
+      <label for="chat">Let us just chat and see where this goes</label>
+    </div>
+</fieldset>
+
+        <button type="submit" class="p-2 bg-white text-black w-64">Save Details</button>
+        </form>
+    
+        </div>
+    
+    </div>
+</body>
+
+<script>
+document.getElementById('contact').addEventListener("submit",(e) => {
+    e.preventDefault()
+    console.log(e)
+    const data = new FormData(e.target)
+    const resp =  JSON.stringify(Object.fromEntries(data))
+    const currentResp = JSON.parse(localStorage.getItem('resp'))
+    if(currentResp){
+        localStorage.setItem('resp',JSON.stringify([...currentResp, resp]))
+    }else{
+        localStorage.setItem('resp', JSON.stringify([resp]))
+    }
+
+    window.location.href ='/contact/thanks'
+})
+</script>
+</html>
